@@ -43,7 +43,10 @@ export default function ContributionGraph() {
     setLoading(true);
     setError(null);
     fetch(`/api/metrics/contributions?days=${days}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("API error");
+        return r.json();
+      })
       .then((res: { data: Record<string, number> }) => {
         const sorted = Object.entries(res.data ?? {})
           .sort(([a], [b]) => a.localeCompare(b))
