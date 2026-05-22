@@ -10,6 +10,7 @@ import DashboardSSEProvider from "@/components/DashboardSSEProvider";
 import StreakAtRiskBanner from "@/components/StreakAtRiskBanner";
 import ThrottleBanner from "@/components/ThrottleBanner";
 import CustomizableDashboard from "@/components/dashboard/CustomizableDashboard";
+import OnboardingTour from "@/components/OnboardingTour";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -19,6 +20,7 @@ export default async function DashboardPage() {
     <DashboardSSEProvider>
       <div className="min-h-screen bg-[var(--background)] px-4 py-8 text-[var(--foreground)] transition-colors sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
         <DashboardHeader />
+        <OnboardingTour />
 
         {/* Quick actions */}
         <div className="mt-8 mb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
