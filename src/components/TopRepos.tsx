@@ -6,6 +6,7 @@ import { useAccount } from "@/components/AccountContext";
 import type { RepoHealthScore } from "@/types/repo-health";
 import RepoHealthPanel from "@/components/RepoHealthPanel";
 import RepoActivityDrawer from "@/components/RepoActivityDrawer";
+import { Search } from "lucide-react";
 
 interface RepoItemProps {
   repo: Repo;
@@ -492,6 +493,16 @@ export default function TopRepos() {
             </span>
           </button>
         </div>
+        <div className="relative mb-4">
+  <Search className="absolute left-3 top-2.5 h-4 w-4 text-[var(--muted-foreground)]" />
+  <input
+    type="text"
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    placeholder="Search repositories…"
+    className="w-full rounded-lg border border-[var(--border)] bg-[var(--control)] px-9 py-2 text-sm focus:border-[var(--accent)] focus:outline-none"
+  />
+</div>
         <ul className="space-y-3">
           {filteredRepos.length === 0 ? (
             <p className="text-sm text-[var(--muted-foreground)] py-4 text-center">
