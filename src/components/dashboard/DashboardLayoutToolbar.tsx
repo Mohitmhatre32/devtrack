@@ -30,7 +30,7 @@ export default function DashboardLayoutToolbar({
             Customize Your Dashboard
           </h2>
           <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
-            Reorder widgets by dragging, hide cards you don't need, and reset to default anytime.
+            Reorder widgets by dragging, hide cards you don&apos;t need, and reset to default anytime.
           </p>
         </div>
 
