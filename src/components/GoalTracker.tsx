@@ -57,8 +57,6 @@ export function useGoalTracker() {
   const prevGoalsRef = useRef<Map<string, boolean>>(new Map());
   const initialLoadDoneRef = useRef<boolean>(false);
 
-  const activeConfirmingGoal = goals.find((g) => g.id === confirmingId);
-
   const loadGoals = useCallback(async () => {
     const response = await fetch("/api/goals");
     const data: { goals: Goal[] } = await response.json();
@@ -73,19 +71,23 @@ export function useGoalTracker() {
     try {
       const res = await fetch("/api/goals/sync", { method: "POST" });
       if (!res.ok) {
-        let errData: { error?: string } = {};
+        let msg = "Sync failed. Please try again.";
         try {
-          errData = await res.json();
+          const errData = await res.json();
+          if (errData && errData.error) {
+            msg = errData.error;
+          }
         } catch (e) {}
-
-        if (res.status === 429) {
-          setSyncError(errData.error ?? "GitHub rate limit reached. Please try again later.");
-        } else if (res.status === 401) {
-          setSyncError("Unauthorized. Please log in again.");
+        if (res.status === 401) {
+          msg = "Unauthorized. Please log in again.";
         } else if (res.status === 502) {
-          setSyncError("GitHub sync failed: Expired token or missing repo scope.");
+          msg = "GitHub sync failed: Expired token or missing repo scope.";
+        }
+        if (res.status === 429) {
+          const data = await res.json();
+          setSyncError(data.error ?? "GitHub rate limit reached. Please try again later.");
         } else {
-          setSyncError(errData.error ?? "Sync failed. Please try again.");
+          setSyncError("Failed to sync goals. Please try again.");
         }
         return;
       }
@@ -278,7 +280,6 @@ export function useGoalTracker() {
     deleteError,
     setDeleteError,
     activeConfettiGoalId,
-    activeConfirmingGoal,
     handleSync,
     handleCreate,
     handleDelete,
@@ -314,7 +315,6 @@ export default function GoalTracker() {
     deleteError,
     setDeleteError,
     activeConfettiGoalId,
-    activeConfirmingGoal,
     handleSync,
     handleCreate,
     handleDelete,
@@ -384,6 +384,8 @@ export default function GoalTracker() {
       setShareError("Failed to copy share link. Please copy it manually.");
     }
   };
+
+  const activeConfirmingGoal = goals.find((g) => g.id === confirmingId);
 
   if (loading) {
     return (
@@ -492,7 +494,7 @@ export default function GoalTracker() {
             const isDeleting = deletingId === goal.id;
             const completed = goal.current >= goal.target;
             const completionLabel = getCompletionLabel(goal);
-            const isAutoSynced = ["commits", "prs", "reviews", "issues_closed", "issues_opened", "open_source_prs"].includes(goal.unit);
+            const isAutoSynced = goal.unit === "commits" || goal.unit === "prs";
 
             return (
               <li key={goal.id} className="relative">
@@ -622,12 +624,9 @@ export default function GoalTracker() {
 
                 <div className="h-2 overflow-hidden rounded-full bg-[var(--control)]">
                   <div
-                    role="progressbar"
-                    aria-valuenow={Math.max(0, Math.min(Math.round(pct), 100))}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={`${goal.title}: ${goal.current} of ${goal.target} ${goal.unit}`}
-                    className={`h-full rounded-full transition-all ${completed ? "bg-emerald-500" : "bg-[var(--accent)]"}`}
+                    className={`h-full rounded-full transition-all ${
+                      completed ? "bg-emerald-500" : "bg-[var(--accent)]"
+                    }`}
                     style={{ width: `${Math.max(0, Math.min(pct, 100))}%` }}
                   />
                 </div>
@@ -735,13 +734,9 @@ export default function GoalTracker() {
             >
               <option value="commits">Commits ⚡</option>
               <option value="prs">PRs ⚡</option>
-              <option value="reviews">Code Reviews</option>
-              <option value="issues_closed">Issues Closed</option>
-              <option value="issues_opened">Issues Opened</option>
-              <option value="open_source_prs">Open Source PRs</option>
-              <option value="milestones">Milestones</option>
               <option value="hours">Hours</option>
               <option value="streak">Streak (days)</option>
+              <option value="language">Lines of Code</option>
             </select>
           </div>
         </div>
@@ -797,15 +792,9 @@ export default function GoalTracker() {
           )}
         </div>
 
-        {/* GitHub Warning */}
-        {["commits", "prs", "reviews", "issues_closed", "issues_opened", "open_source_prs"].includes(unit) && (
+        {(unit === "commits" || unit === "prs") && (
           <p className="text-xs text-[var(--muted-foreground)] rounded-lg bg-[var(--accent)]/10 px-3 py-2">
             ⚡ This goal will auto-update from your GitHub activity.
-          </p>
-        )}
-        {unit === "milestones" && (
-          <p className="text-xs text-[var(--muted-foreground)] rounded-lg bg-[var(--card-muted)] px-3 py-2">
-            🏁 Track custom milestones manually using the +1 button.
           </p>
         )}
 
@@ -849,14 +838,14 @@ export default function GoalTracker() {
 
 function ConfettiBurst() {
   const [particles, setParticles] = useState<Array<{
-    id: number;
-    x: number;
-    y: number;
-    color: string;
-    rot: number;
-    scale: number;
-    speed: number;
-  }>>([]);
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  rot: number;
+  scale: number;
+  speed: number;
+}>>([]);
 
   useEffect(() => {
     const colors = ["var(--accent)", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899"];
