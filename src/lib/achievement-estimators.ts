@@ -33,8 +33,8 @@ export async function fetchAchievementEstimates(
   try {
     // 1. Pull Shark & Galaxy Brain (GraphQL)
     const graphqlQuery = `
-      query {
-        user(login: "${username}") {
+      query($login: String!) {
+        user(login: $login) {
           pullRequests(states: MERGED) {
             totalCount
           }
@@ -50,7 +50,7 @@ export async function fetchAchievementEstimates(
         pullRequests: { totalCount: number };
         repositoryDiscussionComments: { totalCount: number };
       };
-    }>(graphqlQuery, token);
+    }>(graphqlQuery, token, { login: username });
 
     const pullSharkCurrent = graphqlData?.user?.pullRequests?.totalCount ?? 0;
     const pullSharkNext = calculateNextTier(pullSharkCurrent, TIERS_STANDARD);
@@ -76,9 +76,10 @@ export async function fetchAchievementEstimates(
     });
 
     // 2. Starstruck (GraphQL - Total Stars)
+    // Note: This caps at the first 100 repositories as an approximation.
     const starsQuery = `
-      query {
-        user(login: "${username}") {
+      query($login: String!) {
+        user(login: $login) {
           repositories(first: 100, ownerAffiliations: OWNER, isFork: false, orderBy: {field: STARGAZERS, direction: DESC}) {
             nodes {
               stargazerCount
@@ -93,7 +94,7 @@ export async function fetchAchievementEstimates(
           nodes: { stargazerCount: number }[];
         };
       };
-    }>(starsQuery, token);
+    }>(starsQuery, token, { login: username });
 
     const starstruckCurrent =
       starsData?.user?.repositories?.nodes?.reduce(
@@ -112,9 +113,15 @@ export async function fetchAchievementEstimates(
 
     // 3. Pair Extraordinaire (REST API - Commit Search)
     try {
+      const q = encodeURIComponent(`co-authored-by:${username}`);
       const pairRes = await githubFetch<{ total_count: number }>(
-        `https://api.github.com/search/commits?q=co-authored-by:${username}&per_page=1`,
-        token
+        `https://api.github.com/search/commits?q=${q}&per_page=1`,
+        token,
+        {
+          headers: {
+            Accept: "application/vnd.github.cloak-preview+json",
+          },
+        }
       );
       const pairCurrent = pairRes?.total_count ?? 0;
       const pairNext = calculateNextTier(pairCurrent, TIERS_STANDARD);

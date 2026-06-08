@@ -23,6 +23,7 @@ export default function SignOutButton() {
         return (
             <div className="flex items-center gap-2">
                 <Button
+                    type="button"
                     variant="destructive"
                     onClick={handleSignOut}
                     aria-label="Confirm sign out"
@@ -32,6 +33,7 @@ export default function SignOutButton() {
                 </Button>
 
                 <Button
+                    type="button"
                     variant="outline"
                     onClick={() => setConfirming(false)}
                     disabled={signingOut}
@@ -45,6 +47,7 @@ export default function SignOutButton() {
 
     return (
         <Button
+            type="button"
             variant="destructive"
             disabled={signingOut}
             suppressHydrationWarning

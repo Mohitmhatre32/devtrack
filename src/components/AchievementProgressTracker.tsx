@@ -41,7 +41,16 @@ export default function AchievementProgressTracker() {
   }
 
   if (error || estimates.length === 0) {
-    return null; // Don't show if there's an error or no estimates available
+    return (
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+        <h2 className="mb-4 text-lg font-semibold text-[var(--card-foreground)]">
+          Achievement Progress
+        </h2>
+        <p className="text-sm text-[var(--muted-foreground)]">
+          {error ? error : "No achievement estimates available at this time."}
+        </p>
+      </div>
+    );
   }
 
   return (

@@ -6,7 +6,7 @@ import { fetchAchievementEstimates } from "@/lib/achievement-estimators";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session?.accessToken || !session.githubId || !session.githubLogin) {
