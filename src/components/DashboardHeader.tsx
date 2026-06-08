@@ -379,23 +379,6 @@ export default function DashboardHeader() {
               Share Profile
             </a>
           )}
-<<<<<<< HEAD
-=======
-          <KeyboardShortcuts />
-          <button
-            type="button"
-            id="start-onboarding-tour"
-            onClick={() => window.dispatchEvent(new Event("devtrack:start-tour"))}
-            className="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--control)] text-[var(--card-foreground)] text-sm font-medium hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] transition-colors"
-            title="Take a guided tour of the dashboard"
-          >
-            Take Tour
-          </button>
-          <NotificationBell />
-          <UserAvatar />
-          <ThemeToggle />
-          <SignOutButton />
->>>>>>> 410c25b (feat(onboarding): add first-time dashboard tour (#251))
         </div>
       )}
 
