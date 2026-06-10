@@ -71,23 +71,25 @@ export function useGoalTracker() {
     try {
       const res = await fetch("/api/goals/sync", { method: "POST" });
       if (!res.ok) {
-        let msg = "Sync failed. Please try again.";
+        // Read the body exactly once — the Fetch API body stream can only be
+        // consumed once, so we must store the result before branching on status.
+        let errData: { error?: string } = {};
         try {
-          const errData = await res.json();
-          if (errData && errData.error) {
-            msg = errData.error;
-          }
-        } catch (e) {}
-        if (res.status === 401) {
-          msg = "Unauthorized. Please log in again.";
-        } else if (res.status === 502) {
-          msg = "GitHub sync failed: Expired token or missing repo scope.";
-        }
+          errData = await res.json();
+        } catch (_) {}
+
         if (res.status === 429) {
-          const data = await res.json();
-          setSyncError(data.error ?? "GitHub rate limit reached. Please try again later.");
+          setSyncError(
+            errData.error ?? "GitHub rate limit reached. Please try again later."
+          );
+        } else if (res.status === 401) {
+          setSyncError("Unauthorized. Please log in again.");
+        } else if (res.status === 502) {
+          setSyncError(
+            "GitHub sync failed: Expired token or missing repo scope."
+          );
         } else {
-          setSyncError("Failed to sync goals. Please try again.");
+          setSyncError(errData.error ?? "Sync failed. Please try again.");
         }
         return;
       }
