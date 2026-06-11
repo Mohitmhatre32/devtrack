@@ -40,12 +40,13 @@ export default function Footer() {
               Product
             </h3>
             <div className="mt-6 flex flex-col gap-4 text-[14px] text-[var(--muted-foreground)]">
-              <Link className="transition-all duration-200 hover:text-[var(--foreground)] hover:translate-x-1 w-fit" href="/">
-                Home
-              </Link>
-              <Link className="transition-all duration-200 hover:text-[var(--foreground)] hover:translate-x-1 w-fit" href="/dashboard">
-                Dashboard
-              </Link>
+              <a className="transition-all duration-200 hover:text-[var(--foreground)] hover:translate-x-1 w-fit" href="/">
+             Home
+            </a>
+              <a className="transition-all duration-200 hover:text-[var(--foreground)] hover:translate-x-1 w-fit" href="/dashboard">
+              Dashboard
+            </a>
+            
               <Link className="transition-all duration-200 hover:text-[var(--foreground)] hover:translate-x-1 w-fit" href="/leaderboard">
                 Leaderboard
               </Link>
@@ -117,10 +118,8 @@ export default function Footer() {
                 Portfolio
               </a>
               <a
-                className="transition-all duration-200 hover:text-[var(--foreground)] hover:translate-x-1 w-fit"
-                href="mailto:doshipriyanshu3@gmail.com"
-                target="_blank"
-                rel="noopener noreferrer"
+               className="transition-all duration-200 hover:text-[var(--foreground)] hover:translate-x-1 w-fit"
+               href="mailto:doshipriyanshu3@gmail.com"
               >
                 Email
               </a>
