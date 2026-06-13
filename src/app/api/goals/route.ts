@@ -121,6 +121,7 @@ export async function GET() {
             current: 0,
             period_start: periodStart.toISOString(),
             goal_reset_version: oldVersion + 1,
+            week_start: periodStart.toISOString().split("T")[0],
           })
           .eq("id", goal.id)
           .eq("goal_reset_version", oldVersion)
@@ -183,6 +184,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  console.log("[GOALS POST] handler reached");
   const session = await getServerSession(authOptions);
   if (!session?.githubId) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -240,6 +242,7 @@ try {
   }
 
   const user = await resolveAppUser(session.githubId, session.githubLogin);
+  console.log("[GOALS POST] user resolved:", user?.id);
   if (!user) return Response.json({ error: "User not found" }, { status: 404 });
 
   // Pre-check count query using head option for peak performance
@@ -258,7 +261,7 @@ try {
       { status: 400 }
     );
   }
-
+  console.log("[GOALS POST] about to insert");
   const { data: goal, error } = await supabaseAdmin
     .from("goals")
     .insert({
@@ -275,8 +278,10 @@ try {
     .select()
     .single();
 
-  if (error) return Response.json({ error: error.message }, { status: 500 });
-
+  if (error) {
+  console.log("[GOALS POST] insert error:", JSON.stringify(error));
+  return Response.json({ error: error.message }, { status: 500 });
+}
   dispatchToAllWebhooks(user.id, "goal.created", {
     goalId: goal.id,
     title: goal.title,

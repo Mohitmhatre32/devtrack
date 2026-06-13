@@ -20,6 +20,7 @@ interface Goal {
   is_public: boolean;
   period_start: string;
   last_synced_at: string | null;
+  week_start: string | null;
   last_period: {
     period_start: string;
     period_end: string;
@@ -555,6 +556,16 @@ export default function GoalTracker() {
                         {completionLabel}
                       </span>
                     ) : null}
+                    {goal.recurrence === "weekly" && goal.week_start && (
+                      <span className="text-xs text-[var(--muted-foreground)]">
+                        Week: {(() => {
+                          const start = new Date(goal.week_start);
+                          const end = new Date(start);
+                          end.setDate(start.getDate() + 6);
+                          return `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+                        })()}
+                      </span>
+                    )}
                     {goal.last_period && (
                       <span
                         className={`text-xs font-medium ${
