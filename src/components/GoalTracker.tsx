@@ -6,6 +6,8 @@ import { submitGoalWithRefresh } from "@/lib/goal-tracker";
 import ConfirmModal from "@/components/ConfirmModal";
 import { buildPublicGoalShareUrl } from "@/lib/goals/share";
 import GoalHistory from "@/components/GoalHistory";
+import EmptyState from "@/components/EmptyState";
+
 
 type Recurrence = "none" | "weekly" | "monthly";
 
@@ -294,7 +296,10 @@ export function useGoalTracker() {
 }
 
 export default function GoalTracker() {
+
+
   const {
+
     goals,
     setGoals,
     loading,
@@ -487,11 +492,19 @@ export default function GoalTracker() {
       )}
 
       {goals.length === 0 ? (
-        <p className="text-sm text-[var(--muted-foreground)]">
-          No goals yet. Create one below.
-        </p>
+        <div className="mt-6">
+          <EmptyState
+            icon="🎯"
+            title="No goals yet"
+            description="No goals yet. Create your first coding goal to start tracking progress!"
+            actionLabel="Create Goal"
+            actionHref="#create-goal-form"
+          />
+
+        </div>
       ) : (
         <ul className="space-y-4">
+
           {goals.map((goal) => {
             const pct =
               goal.current > 0
@@ -685,7 +698,12 @@ export default function GoalTracker() {
       )}
 
       {/* Goal Creation Form */}
-      <form onSubmit={handleCreate} className="mt-6 space-y-3 border-t border-[var(--border)] pt-4">
+      <form
+        id="create-goal-form"
+        onSubmit={handleCreate}
+        className="mt-6 space-y-3 border-t border-[var(--border)] pt-4"
+      >
+
         <div>
           <label
             htmlFor="goal-title"
