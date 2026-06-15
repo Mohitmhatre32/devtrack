@@ -53,6 +53,7 @@ export default function PRMetrics() {
   const [activeTab, setActiveTab] = useState<"authored" | "reviews">("authored");
   const [prFilter, setPrFilter] = useState<"all" | "merged" | "open">("all");
   const [staleThresholdDays, setStaleThresholdDays] = useState(14);
+  const [range, setRange] = useState<7 | 30 | 90>(30);
 
   const fetchMetrics = useCallback(() => {
     setLoading(true);
@@ -60,8 +61,8 @@ export default function PRMetrics() {
 
     const url =
       selectedAccount !== null
-        ? `/api/metrics/prs?accountId=${encodeURIComponent(selectedAccount)}`
-        : "/api/metrics/prs";
+        ? `/api/metrics/prs?accountId=${encodeURIComponent(selectedAccount)}&range=${range}`
+        : `/api/metrics/prs?range=${range}`;
 
     fetch(url)
       .then((r) => {
@@ -75,7 +76,7 @@ export default function PRMetrics() {
       })
       .catch(() => setError("We couldn't load your PR analytics right now. Please try again in a moment."))
       .finally(() => setLoading(false));
-  }, [selectedAccount]);
+  }, [selectedAccount, range]);
 
   useEffect(() => {
     fetchMetrics();
@@ -121,23 +122,23 @@ export default function PRMetrics() {
 
   const githubStats = metrics
     ? buildStats(metrics, {
-        open: "Open PRs",
-        merged: "Merged (30d)",
-        avgReview: "Avg Review Time",
-        avgFirstReview: "Avg First Review",
-        mergeRate: "Merge Rate",
-        avgCycleTime: "Avg Cycle Time",
-      })
+      open: "Open PRs",
+      merged: `Merged (${range}d)`,
+      avgReview: "Avg Review Time",
+      avgFirstReview: "Avg First Review",
+      mergeRate: "Merge Rate",
+      avgCycleTime: "Avg Cycle Time",
+    })
     : [];
 
   const gitlabStats = metrics?.gitlab
     ? buildStats(metrics.gitlab, {
-        open: "Open MRs",
-        merged: "Merged (30d)",
-        avgReview: "Avg Review Time",
-        avgFirstReview: "Avg First Review",
-        mergeRate: "Merge Rate",
-      })
+      open: "Open MRs",
+      merged: `Merged (${range}d)`,
+      avgReview: "Avg Review Time",
+      avgFirstReview: "Avg First Review",
+      mergeRate: "Merge Rate",
+    })
     : [];
 
   const renderStat = (stat: PRStat) => {
@@ -150,11 +151,10 @@ export default function PRMetrics() {
       </>
     );
 
-    const className = `rounded-lg p-4 text-center min-w-0 border border-transparent transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md ${
-      stat.warning
+    const className = `rounded-lg p-4 text-center min-w-0 border border-transparent transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md ${stat.warning
         ? "border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/15 hover:border-orange-400/50"
         : "bg-[var(--control)] hover:bg-[var(--control-hover)] hover:border-[var(--border)]"
-    }`;
+      }`;
 
     return stat.href ? (
       <a key={stat.label} href={stat.href} target="_blank" rel="noopener noreferrer" className={className} title={stat.title}>
@@ -175,21 +175,31 @@ export default function PRMetrics() {
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab("authored")}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                activeTab === "authored" ? "bg-[var(--accent)] text-white" : "bg-[var(--control)] text-[var(--muted-foreground)] hover:bg-[var(--card-muted)]"
-              }`}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === "authored" ? "bg-[var(--accent)] text-white" : "bg-[var(--control)] text-[var(--muted-foreground)] hover:bg-[var(--card-muted)]"
+                }`}
             >
               PRs Authored
             </button>
             <button
               onClick={() => setActiveTab("reviews")}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                activeTab === "reviews" ? "bg-[var(--accent)] text-white" : "bg-[var(--control)] text-[var(--muted-foreground)] hover:bg-[var(--card-muted)]"
-              }`}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${activeTab === "reviews" ? "bg-[var(--accent)] text-white" : "bg-[var(--control)] text-[var(--muted-foreground)] hover:bg-[var(--card-muted)]"
+                }`}
             >
               Reviews Given
             </button>
           </div>
+          <label className="flex items-center gap-2 text-xs font-medium text-[var(--muted-foreground)]">
+            Range
+            <select
+              value={range}
+              onChange={(event) => setRange(Number(event.target.value) as 7 | 30 | 90)}
+              className="rounded-md border border-[var(--border)] bg-[var(--control)] px-2 py-1 text-sm text-[var(--foreground)] transition-colors"
+            >
+              <option value={7}>7d</option>
+              <option value={30}>30d</option>
+              <option value={90}>90d</option>
+            </select>
+          </label>
           <label className="flex items-center gap-2 text-xs font-medium text-[var(--muted-foreground)]">
             Stale after
             <select
@@ -247,9 +257,8 @@ export default function PRMetrics() {
                   <button
                     key={filter}
                     onClick={() => setPrFilter(filter)}
-                    className={`rounded-full px-4 py-1.5 text-xs font-semibold capitalize transition-colors ${
-                      prFilter === filter ? "bg-[var(--accent)] text-white" : "bg-[var(--control)] text-[var(--muted-foreground)]"
-                    }`}
+                    className={`rounded-full px-4 py-1.5 text-xs font-semibold capitalize transition-colors ${prFilter === filter ? "bg-[var(--accent)] text-white" : "bg-[var(--control)] text-[var(--muted-foreground)]"
+                      }`}
                   >
                     {filter}
                   </button>
@@ -346,7 +355,7 @@ export default function PRMetrics() {
           </div>
         </div>
       )}
-      
+
       {lastUpdated && (
         <p className="text-xs text-[var(--muted-foreground)] mt-2 text-right">
           {minutesAgo === 0 ? "Updated just now" : `Updated ${minutesAgo} min ago`}
