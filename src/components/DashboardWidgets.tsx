@@ -21,6 +21,7 @@ import FriendComparison from "@/components/FriendComparison";
 import WeeklySummaryCard from "@/components/WeeklySummaryCard";
 import ExportButton from "@/components/ExportButton";
 import PersonalRecords from "@/components/PersonalRecords";
+import SponsorAnalytics from "@/components/SponsorAnalytics";
 import WidgetErrorBoundary from "@/components/WidgetErrorBoundary";
 
 function DashboardWidgets() { return (
@@ -57,6 +58,13 @@ function DashboardWidgets() { return (
           <PersonalRecords />
         </WidgetErrorBoundary>
       </div>
+
+      <div className="mb-6">
+        <WidgetErrorBoundary>
+          <SponsorAnalytics />
+        </WidgetErrorBoundary>
+      </div>
+
 
       {/* Row 1 */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

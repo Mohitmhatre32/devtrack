@@ -343,6 +343,35 @@ function mockMetricResponse(path) {
     return { repos: [] };
   }
 
+  if (path.includes("/sponsors")) {
+    return {
+      mrr: 85,
+      activeCount: 3,
+      growthTrend: 200,
+      sparklineData: [
+        { month: "Jan", count: 0 },
+        { month: "Feb", count: 0 },
+        { month: "Mar", count: 0 },
+        { month: "Apr", count: 1 },
+        { month: "May", count: 1 },
+        { month: "Jun", count: 3 },
+      ],
+      sponsors: [
+        {
+          login: "sponsor-1",
+          name: "Gold Supporter",
+          url: "https://github.com/sponsor-1",
+          avatarUrl: null,
+          privacyLevel: "PUBLIC",
+          tierName: "$50 tier",
+          monthlyPriceInCents: 5000,
+          createdAt: "2026-05-18T12:00:00.000Z",
+        },
+      ],
+      syncedAt: "2026-06-11T12:00:00.000Z",
+    };
+  }
+
   return {};
 }
 
