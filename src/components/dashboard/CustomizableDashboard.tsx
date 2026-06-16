@@ -42,6 +42,7 @@ import RecentActivity from "@/components/RecentActivity";
 import DailyNoteWidget from "@/components/DailyNoteWidget";
 import WidgetErrorBoundary from "@/components/WidgetErrorBoundary";
 import DashboardLayoutToolbar from "@/components/dashboard/DashboardLayoutToolbar";
+import { DashboardWidgetA11yProvider } from "@/components/dashboard/DashboardWidgetA11yContext";
 import SortableDashboardWidget from "@/components/dashboard/SortableDashboardWidget";
 import {
   DASHBOARD_LAYOUT_STORAGE_KEY,
@@ -624,12 +625,13 @@ export default function CustomizableDashboard() {
           : "Layout editing disabled."}
       </p>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        {layout.sections.map((sectionId) => {
+      <DashboardWidgetA11yProvider>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          {layout.sections.map((sectionId) => {
           const sectionWidgets = layout.widgets[sectionId];
 
           return (
@@ -679,7 +681,8 @@ export default function CustomizableDashboard() {
             </section>
           );
         })}
-      </DndContext>
+        </DndContext>
+      </DashboardWidgetA11yProvider>
     </div>
   );
 }

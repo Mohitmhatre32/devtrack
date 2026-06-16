@@ -3,6 +3,7 @@ import SectionHeader from "./SectionHeader";
 
 import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "@/components/AccountContext";
+import { useDashboardWidgetA11y } from "@/components/dashboard/DashboardWidgetA11yContext";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import PRStatusDonutChart from "./PRStatusDonutChart";
 import MiniPRTrendChart from "./MiniPRTrendChart";
@@ -56,6 +57,21 @@ export default function PRMetrics() {
   const [prFilter, setPrFilter] = useState<"all" | "merged" | "open">("all");
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
   const [staleThresholdDays, setStaleThresholdDays] = useState(14);
+  const { setSummary, setIsUpdating } = useDashboardWidgetA11y("pr-metrics");
+
+  useEffect(() => {
+    setIsUpdating(loading);
+  }, [loading, setIsUpdating]);
+
+  useEffect(() => {
+    if (!metrics) {
+      setSummary(null);
+      return;
+    }
+    setSummary(
+      `${metrics.open} open PRs. ${metrics.merged} merged in the last 30 days.`,
+    );
+  }, [metrics, setSummary]);
 
   const fetchMetrics = useCallback(() => {
     setLoading(true);

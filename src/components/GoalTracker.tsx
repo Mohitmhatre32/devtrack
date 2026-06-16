@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { useDashboardWidgetA11y } from "@/components/dashboard/DashboardWidgetA11yContext";
 import { submitGoalWithRefresh } from "@/lib/goal-tracker";
 import ConfirmModal from "@/components/ConfirmModal";
 import { buildPublicGoalShareUrl } from "@/lib/goals/share";
@@ -326,6 +327,22 @@ export default function GoalTracker() {
     handleDelete,
     getCompletionLabel,
   } = useGoalTracker();
+
+  const { setSummary, setIsUpdating } = useDashboardWidgetA11y("goal-tracker");
+
+  useEffect(() => {
+    setIsUpdating(loading);
+  }, [loading, setIsUpdating]);
+
+  useEffect(() => {
+    const activeCount = goals.filter((goal) => goal.current < goal.target).length;
+    const completedCount = goals.filter(
+      (goal) => goal.current >= goal.target,
+    ).length;
+    setSummary(
+      `${activeCount} active goal${activeCount === 1 ? "" : "s"}. ${completedCount} completed.`,
+    );
+  }, [goals, setSummary]);
 
   const { data: session } = useSession();
 
