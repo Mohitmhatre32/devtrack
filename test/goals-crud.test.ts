@@ -143,7 +143,7 @@ describe("POST /api/goals", () => {
 
   it("returns 401 when there is no session", async () => {
     mocks.getServerSession.mockResolvedValue(null);
-    const [req] = makePostRequest({ title: "Test", target: 10 });
+    const [req] = makePostRequest({ title: "Test", target: 10, unit: "commits" });
     const res = await POST(req);
     expect(res.status).toBe(401);
   });
@@ -177,13 +177,13 @@ describe("POST /api/goals", () => {
   });
 
   it("returns 400 when title is omitted", async () => {
-    const [req] = makePostRequest({ target: 10 });
+    const [req] = makePostRequest({ target: 10, unit: "commits" });
     const res = await POST(req);
     expect(res.status).toBe(400);
   });
 
   it("returns 400 when target exceeds the maximum", async () => {
-    const [req] = makePostRequest({ title: "Goal", target: 10001 });
+    const [req] = makePostRequest({ title: "Goal", target: 10001, unit: "commits" });
     const res = await POST(req);
     expect(res.status).toBe(400);
   });
@@ -198,7 +198,7 @@ describe("POST /api/goals", () => {
         }),
       }),
     });
-    const [req] = makePostRequest({ title: "Read docs", target: 10 });
+    const [req] = makePostRequest({ title: "Read docs", target: 10, unit: "commits" });
     const res = await POST(req);
     expect(res.status).toBe(400);
     const body = await res.json();
@@ -220,9 +220,25 @@ describe("POST /api/goals", () => {
           eq: vi.fn().mockResolvedValue({ count: 5, error: null }),
         }),
     });
-    const [req] = makePostRequest({ title: "Another goal", target: 10 });
+    const [req] = makePostRequest({ title: "Another goal", target: 10, unit: "commits" });
     const res = await POST(req);
     expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when unit is omitted", async () => {
+    const [req] = makePostRequest({ title: "No unit", target: 5 });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("unit must be commits, prs, hours, streak, or language");
+  });
+
+  it("returns 400 when unit is invalid", async () => {
+    const [req] = makePostRequest({ title: "Invalid unit", target: 5, unit: "invalid-unit" });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("unit must be commits, prs, hours, streak, or language");
   });
 });
 
@@ -285,6 +301,14 @@ describe("PATCH /api/goals/[id]", () => {
     });
     const res = await PATCH(req, { params: Promise.resolve({ id: "goal-1" }) });
     expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when unit in patch is invalid", async () => {
+    const [req, ctx] = makePatchRequest({ unit: "invalid-unit" });
+    const res = await PATCH(req, ctx);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("unit must be commits, prs, hours, streak, or language");
   });
 });
 
