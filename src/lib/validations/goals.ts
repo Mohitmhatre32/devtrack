@@ -18,13 +18,11 @@ export const createGoalSchema = z
       .int({ message: "target must be an integer between 1 and 10000" })
       .min(1, { message: "target must be an integer between 1 and 10000" })
       .max(10000, { message: "target must be an integer between 1 and 10000" }),
-    unit: z.any().optional(),
+    unit: z.enum(VALID_UNITS, {
+      message: "unit must be commits, prs, hours, streak, or language",
+    }),
     recurrence: z
-      .string({
-        message: "recurrence must be 'none', 'weekly', or 'monthly'",
-      })
-      .optional()
-      .refine((val) => val === undefined || VALID_RECURRENCES.includes(val as any), {
+      .enum(VALID_RECURRENCES, {
         message: "recurrence must be 'none', 'weekly', or 'monthly'",
       })
       .default("none"),
@@ -37,15 +35,6 @@ export const createGoalSchema = z
       })
       .nullable()
       .optional(),
-  })
-  .superRefine((val, ctx) => {
-    if (val.unit === undefined || typeof val.unit !== "string" || !VALID_UNITS.includes(val.unit as any)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "unit must be commits, prs, hours, streak, or language",
-        path: ["unit"],
-      });
-    }
   });
 
 export const patchGoalSchema = z
@@ -65,15 +54,16 @@ export const patchGoalSchema = z
       .min(1, { message: "target must be an integer between 1 and 10000" })
       .max(10000, { message: "target must be an integer between 1 and 10000" })
       .optional(),
-    unit: z.any().optional(),
+    unit: z
+      .enum(VALID_UNITS, {
+        message: "unit must be commits, prs, hours, streak, or language",
+      })
+      .optional(),
     recurrence: z
-      .string({
+      .enum(VALID_RECURRENCES, {
         message: "recurrence must be 'none', 'weekly', or 'monthly'",
       })
-      .optional()
-      .refine((val) => val === undefined || VALID_RECURRENCES.includes(val as any), {
-        message: "recurrence must be 'none', 'weekly', or 'monthly'",
-      }),
+      .optional(),
     current: z
       .number({
         message: "current must be a non-negative integer",
@@ -86,17 +76,6 @@ export const patchGoalSchema = z
         message: "is_public must be a boolean",
       })
       .optional(),
-  })
-  .superRefine((val, ctx) => {
-    if (val.unit !== undefined) {
-      if (typeof val.unit !== "string" || !VALID_UNITS.includes(val.unit as any)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "unit must be commits, prs, hours, streak, or language",
-          path: ["unit"],
-        });
-      }
-    }
   });
 
 export type CreateGoalInput = z.infer<typeof createGoalSchema>;

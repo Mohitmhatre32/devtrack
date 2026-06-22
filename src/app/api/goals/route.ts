@@ -211,12 +211,14 @@ try {
   const { title, target, unit, recurrence, deadline } = validationResult.data;
 
   const sanitizedTitle = stripHtml(title).trim();
+  // Additional check after sanitization because HTML-only
+  // strings like "<script></script>" pass min(1) but become empty.
   if (sanitizedTitle.length === 0) {
     return Response.json({ error: "title must not be empty" }, { status: 400 });
   }
 
   const safeUnit = unit;
-  const safeRecurrence = recurrence as Recurrence;
+  const safeRecurrence = recurrence;
 
   let safeDeadline: string | null = null;
   if (deadline) {

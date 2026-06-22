@@ -19,7 +19,7 @@ vi.mock("@/lib/webhooks", () => ({
   dispatchToAllWebhooks: mocks.dispatchToAllWebhooks,
 }));
 vi.mock("@/lib/sanitize", () => ({
-  stripHtml: vi.fn((s: string) => s),
+  stripHtml: vi.fn((s: string) => s.replace(/<[^>]*>/g, "")),
 }));
 
 function buildGoal(overrides: Record<string, unknown> = {}) {
@@ -239,6 +239,95 @@ describe("POST /api/goals", () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toBe("unit must be commits, prs, hours, streak, or language");
+  });
+
+  it("should reject invalid unit", async () => {
+    const [req] = makePostRequest({ title: "Invalid unit", target: 5, unit: "invalid-unit" });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("unit must be commits, prs, hours, streak, or language");
+  });
+
+  it("should reject missing unit", async () => {
+    const [req] = makePostRequest({ title: "No unit", target: 5 });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("unit must be commits, prs, hours, streak, or language");
+  });
+
+  it("should reject invalid recurrence", async () => {
+    const [req] = makePostRequest({
+      title: "Invalid recurrence",
+      target: 5,
+      unit: "commits",
+      recurrence: "daily",
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("recurrence must be 'none', 'weekly', or 'monthly'");
+  });
+
+  it("should accept missing recurrence", async () => {
+    const createdGoal = buildGoal({ title: "No recurrence", target: 5, unit: "commits", recurrence: "none" });
+    mocks.supabaseFrom.mockReturnValue({
+      select: vi.fn()
+        .mockReturnValueOnce({
+          eq: vi.fn().mockReturnValue({
+            ilike: vi.fn().mockReturnValue({
+              maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+            }),
+          }),
+        })
+        .mockReturnValueOnce({
+          eq: vi.fn().mockResolvedValue({ count: 0, error: null }),
+        }),
+      insert: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: createdGoal, error: null }),
+        }),
+      }),
+    });
+    const [req] = makePostRequest({ title: "No recurrence", target: 5, unit: "commits" });
+    const res = await POST(req);
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.goal.recurrence).toBe("none");
+  });
+
+  it("should reject title exceeding 100 characters", async () => {
+    const longTitle = "a".repeat(101);
+    const [req] = makePostRequest({ title: longTitle, target: 5, unit: "commits" });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("title must be 100 characters or fewer");
+  });
+
+  it("should reject target below 1", async () => {
+    const [req] = makePostRequest({ title: "Target below 1", target: 0, unit: "commits" });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("target must be an integer between 1 and 10000");
+  });
+
+  it("should reject target above 10000", async () => {
+    const [req] = makePostRequest({ title: "Target above max", target: 10001, unit: "commits" });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("target must be an integer between 1 and 10000");
+  });
+
+  it("should reject HTML-only title that becomes empty after stripHtml", async () => {
+    const [req] = makePostRequest({ title: "<b></b>", target: 5, unit: "commits" });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("title must not be empty");
   });
 });
 
