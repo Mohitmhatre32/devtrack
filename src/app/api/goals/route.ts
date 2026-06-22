@@ -216,7 +216,7 @@ try {
   }
 
   const safeUnit = unit;
-  const safeRecurrence = recurrence;
+  const safeRecurrence = recurrence as Recurrence;
 
   let safeDeadline: string | null = null;
   if (deadline) {

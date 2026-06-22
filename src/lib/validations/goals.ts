@@ -7,15 +7,13 @@ export const createGoalSchema = z
   .object({
     title: z
       .string({
-        required_error: "title must be a non-empty string",
-        invalid_type_error: "title must be a non-empty string",
+        message: "title must be a non-empty string",
       })
       .min(1, { message: "title must not be empty" })
       .max(100, { message: "title must be 100 characters or fewer" }),
     target: z
       .number({
-        required_error: "target must be an integer between 1 and 10000",
-        invalid_type_error: "target must be an integer between 1 and 10000",
+        message: "target must be an integer between 1 and 10000",
       })
       .int({ message: "target must be an integer between 1 and 10000" })
       .min(1, { message: "target must be an integer between 1 and 10000" })
@@ -23,7 +21,7 @@ export const createGoalSchema = z
     unit: z.any().optional(),
     recurrence: z
       .string({
-        invalid_type_error: "recurrence must be 'none', 'weekly', or 'monthly'",
+        message: "recurrence must be 'none', 'weekly', or 'monthly'",
       })
       .optional()
       .refine((val) => val === undefined || VALID_RECURRENCES.includes(val as any), {
@@ -32,7 +30,7 @@ export const createGoalSchema = z
       .default("none"),
     deadline: z
       .string({
-        invalid_type_error: "deadline must be a valid date string",
+        message: "deadline must be a valid date string",
       })
       .refine((val) => !isNaN(new Date(val).getTime()), {
         message: "deadline must be a valid date string",
@@ -54,14 +52,14 @@ export const patchGoalSchema = z
   .object({
     title: z
       .string({
-        invalid_type_error: "title must be a non-empty string",
+        message: "title must be a non-empty string",
       })
       .min(1, { message: "title must not be empty" })
       .max(100, { message: "title must be 100 characters or fewer" })
       .optional(),
     target: z
       .number({
-        invalid_type_error: "target must be an integer between 1 and 10000",
+        message: "target must be an integer between 1 and 10000",
       })
       .int({ message: "target must be an integer between 1 and 10000" })
       .min(1, { message: "target must be an integer between 1 and 10000" })
@@ -70,7 +68,7 @@ export const patchGoalSchema = z
     unit: z.any().optional(),
     recurrence: z
       .string({
-        invalid_type_error: "recurrence must be 'none', 'weekly', or 'monthly'",
+        message: "recurrence must be 'none', 'weekly', or 'monthly'",
       })
       .optional()
       .refine((val) => val === undefined || VALID_RECURRENCES.includes(val as any), {
@@ -78,14 +76,14 @@ export const patchGoalSchema = z
       }),
     current: z
       .number({
-        invalid_type_error: "current must be a non-negative integer",
+        message: "current must be a non-negative integer",
       })
       .int({ message: "current must be a non-negative integer" })
       .min(0, { message: "current must be a non-negative integer" })
       .optional(),
     is_public: z
       .boolean({
-        invalid_type_error: "is_public must be a boolean",
+        message: "is_public must be a boolean",
       })
       .optional(),
   })
